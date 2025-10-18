@@ -38,6 +38,7 @@ class _NewItemModalState extends State<NewItemModal> {
             children: [
               TextFormField(
                 controller: _descriptionController,
+                autofocus: true,
                 decoration: const InputDecoration(
                   labelText: 'Description',
                   border: OutlineInputBorder(),
