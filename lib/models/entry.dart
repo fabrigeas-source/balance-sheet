@@ -57,6 +57,7 @@ class Entry {
       amount: json['amount'] as double,
       type: EntryType.values.firstWhere(
         (e) => e.toString() == json['type'],
+        orElse: () => EntryType.expense,
       ),
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
@@ -64,5 +65,5 @@ class Entry {
 
   @override
   String toString() =>
-      'Entry{id: $id, description: $description, amount: $amount, type: $type}';
+      'Entry{id: \$id, description: \$description, amount: \$amount, type: \$type}';
 }
