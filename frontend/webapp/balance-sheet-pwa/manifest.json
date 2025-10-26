@@ -1,0 +1,21 @@
+{
+  "name": "Balance Sheet App",
+  "short_name": "BalanceSheet",
+  "start_url": "balance-sheet.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4CAF50",
+  "description": "A Progressive Web App for managing balance sheets.",
+  "icons": [
+    {
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

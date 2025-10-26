@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#2f855a" />
+    <link rel="manifest" href="manifest.json" />
+    <title>Balance Sheet PWA</title>
+    <style>
+        :root {
+            --bg: #0f172a; /* slate-900 */
+            --panel: #111827; /* gray-900 */
+            --muted: #94a3b8; /* slate-400 */
+            --text: #e5e7eb; /* gray-200 */
+            --accent: #22c55e; /* green-500 */
+            --accent-600: #16a34a; /* green-600 */
+            --danger: #ef4444; /* red-500 */
+            --warning: #f59e0b; /* amber-500 */
+        }
+
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Noto Sans, "Apple Color Emoji", "Segoe UI Emoji";
+            background: radial-gradient(1200px 800px at 10% 0%, #0b1220 0%, var(--bg) 60%);
+            color: var(--text);
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            min-height: 100vh;
+        }
+
+        header {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px;
+            padding: 16px clamp(16px, 4vw, 32px);
+            position: sticky; top: 0; backdrop-filter: saturate(140%) blur(6px);
+            background: color-mix(in oklab, var(--bg) 75%, transparent);
+            border-bottom: 1px solid rgba(148,163,184,0.15);
+            z-index: 10;
+        }
+        header h1 { margin: 0; font-weight: 700; font-size: clamp(18px, 2.4vw, 22px); letter-spacing: .2px; }
+        .actions { display:flex; gap: 8px; align-items:center; }
+
+        main { padding: 24px clamp(16px, 4vw, 32px); max-width: 960px; width: 100%; margin-inline: auto; }
+
+        .panel {
+            background: linear-gradient(180deg, color-mix(in oklab, var(--panel) 88%, #0b1220 12%), var(--panel));
+            border: 1px solid rgba(148,163,184,0.12);
+            border-radius: 14px;
+            padding: clamp(14px, 2.5vw, 18px);
+            box-shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
+        }
+
+        .summary { display:grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; margin-bottom: 16px; }
+        .summary .total { font-size: clamp(22px, 3vw, 28px); font-weight: 800; letter-spacing: .3px; }
+        .summary .total.positive { color: var(--accent); }
+        .summary .total.negative { color: var(--danger); }
+        .summary small { color: var(--muted); }
+
+        form.add {
+            display:grid; grid-template-columns: 1fr clamp(90px, 16vw, 140px) clamp(90px, 16vw, 140px) auto; gap: 10px;
+            align-items: center; margin-bottom: 10px;
+        }
+        form.add input, form.add select {
+            width: 100%;
+            padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(148,163,184,0.18);
+            background: #0b1220; color: var(--text);
+        }
+        .btn { cursor: pointer; border: 0; border-radius: 10px; padding: 10px 14px; font-weight: 600; }
+        .btn-primary { background: linear-gradient(180deg, var(--accent), var(--accent-600)); color: #06120b; }
+        .btn-ghost { background: transparent; color: var(--muted); border: 1px solid rgba(148,163,184,0.2); }
+        .btn-danger { background: linear-gradient(180deg, #f87171, #ef4444); color: #160b0b; }
+
+        ul#entry-list { list-style: none; padding: 0; margin: 0; }
+        .item { display:grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px dashed rgba(148,163,184,0.15); }
+        .item .meta { display:flex; gap: 8px; color: var(--muted); font-size: 12px; }
+        .amount { font-variant-numeric: tabular-nums; font-weight: 700; }
+        .amount.income { color: var(--accent); }
+        .amount.expense { color: var(--danger); }
+        .item .row-actions { display:flex; gap: 6px; }
+
+        footer { color: var(--muted); text-align: center; padding: 18px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Balance Sheet</h1>
+        <div class="actions">
+                <button id="shareBtn" class="btn btn-primary" title="Share app">Share</button>
+            <button id="exportBtn" class="btn btn-ghost" title="Export JSON">Export</button>
+            <button id="clearBtn" class="btn btn-danger" title="Clear all">Clear</button>
+        </div>
+    </header>
+
+    <main>
+        <section class="panel">
+            <div class="summary">
+                <div>
+                    <div id="total" class="total">Total: $0.00</div>
+                    <small id="breakdown">Income: $0.00 · Expense: $0.00</small>
+                </div>
+            </div>
+
+            <form id="addForm" class="add" autocomplete="off">
+                <input id="desc" name="desc" type="text" placeholder="Description" required />
+                <input id="amount" name="amount" type="number" step="0.01" placeholder="Amount" required />
+                <select id="type" name="type" aria-label="Type">
+                    <option value="income">Income</option>
+                    <option value="expense">Expense</option>
+                </select>
+                <button class="btn btn-primary" type="submit">Add</button>
+            </form>
+
+            <ul id="entry-list"></ul>
+        </section>
+    </main>
+
+    <footer>
+        <span>&copy; <span id="year"></span> Balance Sheet App</span>
+    </footer>
+
+    <script>
+        (function() {
+            const KEY = 'balanceSheetEntries:v1';
+            const $ = (sel, el=document) => el.querySelector(sel);
+            const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
+            const fmt = new Intl.NumberFormat(undefined, { style: 'currency', currency: (navigator.language || 'en-US').includes('IT') ? 'EUR' : 'USD' });
+
+            const state = {
+                entries: [],
+            };
+
+            function load() {
+                try { state.entries = JSON.parse(localStorage.getItem(KEY)) || []; }
+                catch { state.entries = []; }
+            }
+
+            function persist() {
+                localStorage.setItem(KEY, JSON.stringify(state.entries));
+            }
+
+            function computeTotals() {
+                let income = 0, expense = 0;
+                for (const e of state.entries) {
+                    const amt = Number(e.amount) || 0;
+                    if (e.type === 'expense') expense += Math.abs(amt); else income += Math.abs(amt);
+                }
+                return { income, expense, total: income - expense };
+            }
+
+            function render() {
+                const list = $('#entry-list');
+                list.innerHTML = '';
+                for (const e of state.entries) {
+                    const li = document.createElement('li');
+                    li.className = 'item';
+                    li.dataset.id = e.id;
+
+                    const title = document.createElement('div');
+                    title.innerHTML = `<strong>${e.desc}</strong><div class="meta"><span>${new Date(e.createdAt).toLocaleString()}</span><span>•</span><span>${e.type}</span></div>`;
+
+                    const amount = document.createElement('div');
+                    amount.className = 'amount ' + (e.type === 'expense' ? 'expense' : 'income');
+                    const sign = e.type === 'expense' ? '-' : '+';
+                    amount.textContent = `${sign}${fmt.format(Math.abs(Number(e.amount)||0))}`;
+
+                    const actions = document.createElement('div');
+                    actions.className = 'row-actions';
+                    const del = document.createElement('button');
+                    del.className = 'btn btn-ghost';
+                    del.textContent = 'Delete';
+                    del.addEventListener('click', () => remove(e.id));
+                    actions.appendChild(del);
+
+                    li.append(title, amount, actions);
+                    list.appendChild(li);
+                }
+
+                const { income, expense, total } = computeTotals();
+                const totalEl = $('#total');
+                totalEl.textContent = `Total: ${fmt.format(total)}`;
+                totalEl.classList.toggle('positive', total >= 0);
+                totalEl.classList.toggle('negative', total < 0);
+                $('#breakdown').textContent = `Income: ${fmt.format(income)} · Expense: ${fmt.format(expense)}`;
+            }
+
+            function add(entry) {
+                state.entries.unshift(entry);
+                persist();
+                render();
+            }
+
+            function remove(id) {
+                state.entries = state.entries.filter(e => e.id !== id);
+                persist();
+                render();
+            }
+
+            function clearAll() {
+                if (!confirm('Clear all entries?')) return;
+                state.entries = [];
+                persist();
+                render();
+            }
+
+            function exportJSON() {
+                const blob = new Blob([JSON.stringify(state.entries, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = `balance-sheet-${new Date().toISOString().slice(0,10)}.json`;
+                a.click(); URL.revokeObjectURL(url);
+            }
+
+                    function shareApp() {
+                        const url = new URL('./balance-sheet.html', location.href).toString();
+                        const text = 'Try my Balance Sheet PWA:';
+                        if (navigator.share) {
+                            navigator.share({ title: 'Balance Sheet', text, url }).catch(() => {
+                                const wa = 'https://wa.me/?text=' + encodeURIComponent(`${text} ${url}`);
+                                window.open(wa, '_blank');
+                            });
+                        } else {
+                            const wa = 'https://wa.me/?text=' + encodeURIComponent(`${text} ${url}`);
+                            window.open(wa, '_blank');
+                        }
+                    }
+
+            function onSubmit(ev) {
+                ev.preventDefault();
+                const desc = $('#desc').value.trim();
+                const amount = Number($('#amount').value);
+                const type = $('#type').value;
+                if (!desc || !Number.isFinite(amount)) return;
+                add({ id: crypto.randomUUID(), desc, amount, type, createdAt: Date.now() });
+                ev.target.reset();
+                $('#desc').focus();
+            }
+
+            function registerSW() {
+                if ('serviceWorker' in navigator) {
+                    window.addEventListener('load', () => {
+                        navigator.serviceWorker.register('./service-worker.js', { scope: './' }).catch(console.error);
+                    });
+                }
+            }
+
+            function init() {
+                $('#year').textContent = new Date().getFullYear();
+                load();
+                render();
+                $('#addForm').addEventListener('submit', onSubmit);
+                $('#clearBtn').addEventListener('click', clearAll);
+                $('#exportBtn').addEventListener('click', exportJSON);
+                        $('#shareBtn').addEventListener('click', shareApp);
+                registerSW();
+            }
+
+            document.addEventListener('visibilitychange', () => { if (document.hidden) persist(); });
+            window.addEventListener('beforeunload', persist);
+            init();
+        })();
+    </script>
+</body>
+</html>

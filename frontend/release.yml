@@ -1,0 +1,90 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. v1.2.3)'
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_KEY: ${{ secrets.SSH_KEY }}
+      REPO_URL: ${{ github.repository }}
+      STAGE_BRANCH: stage
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.6'
+
+      - name: Bump version and create tag
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          sed -i "s/^version: .*/version: ${{ github.event.inputs.version }}+1/" pubspec.yaml
+          git add pubspec.yaml
+          git commit -m "chore: bump version to ${{ github.event.inputs.version }}"
+          git tag ${{ github.event.inputs.version }}
+
+      - name: Push to stage branch
+        run: |
+          git push origin HEAD:${{ env.STAGE_BRANCH }}
+          git push origin ${{ github.event.inputs.version }}
+
+      - name: Build Flutter web app
+        run: |
+          flutter pub get
+          flutter build web
+
+      - name: Copy frontend to backend static
+        run: |
+          rm -rf backend/public/*
+          cp -r build/web/* backend/public/
+
+      - name: Archive backend for deployment
+        run: |
+          tar czf backend-release.tar.gz backend
+
+      - name: SSH Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ env.SSH_HOST }}
+          username: ${{ env.SSH_USER }}
+          key: ${{ env.SSH_KEY }}
+          script: |
+            set -e
+            if [ ! -d balance_sheet_app ]; then
+              git clone https://github.com/${{ env.REPO_URL }}.git balance_sheet_app
+            fi
+            cd balance_sheet_app
+            git fetch --all
+            git checkout ${{ env.STAGE_BRANCH }}
+            git pull
+            git status
+            # Build frontend and copy to backend static
+            flutter pub get
+            flutter build web
+            rm -rf backend/public/*
+            cp -r build/web/* backend/public/
+            # Build backend (npm install)
+            cd backend
+            npm install --production
+            # Build Docker image
+            docker build -t balance-sheet-backend:latest .
+            # Stop and remove old container
+            pm2 delete balance-sheet-backend || true
+            # Start new container with pm2
+            pm2 start npm --name balance-sheet-backend -- run start
