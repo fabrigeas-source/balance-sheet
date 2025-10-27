@@ -10,6 +10,8 @@ class ItemTile extends StatefulWidget {
   final VoidCallback onTap;
   final VoidCallback onDelete;
   final ValueChanged<Entry>? onEdit;
+  final VoidCallback? onLongPress;
+  final VoidCallback? onDoubleTap;
 
   const ItemTile({
     Key? key,
@@ -17,6 +19,8 @@ class ItemTile extends StatefulWidget {
     required this.onTap,
     required this.onDelete,
     this.onEdit,
+    this.onLongPress,
+    this.onDoubleTap,
   }) : super(key: key);
 
   @override
@@ -63,7 +67,7 @@ class _ItemTileState extends State<ItemTile> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Create Sub-list'),
-        content: const Text('Do you want to create a sub-list for this item?'),
+        content: Text('Do you want to create a sub-list under "${widget.item.description}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
@@ -72,12 +76,12 @@ class _ItemTileState extends State<ItemTile> {
           FilledButton(
             onPressed: () {
               Navigator.of(dialogContext).pop();
-              showDialog(
-                context: context,
-                builder: (ctx) => NewItemModal(parentId: widget.item.id),
-              );
+              // Trigger navigation to sub-list immediately
+              if (widget.onDoubleTap != null) {
+                widget.onDoubleTap!();
+              }
             },
-            child: const Text('CREATE'),
+            child: const Text('OPEN SUB-LIST'),
           ),
         ],
       ),
@@ -86,7 +90,15 @@ class _ItemTileState extends State<ItemTile> {
 
   @override
   Widget build(BuildContext context) {
-    final children = context.watch<ItemProvider>().getChildrenForItem(widget.item.id);
+    final provider = context.watch<ItemProvider>();
+    final children = provider.getChildrenForItem(widget.item.id);
+    final hasChildren = children.isNotEmpty;
+    final displayAmount = hasChildren 
+        ? provider.getSubItemsTotal(widget.item.id)
+        : widget.item.amount;
+    final displayColor = hasChildren
+        ? (displayAmount >= 0 ? Colors.green : Colors.red)
+        : (widget.item.type == EntryType.revenue ? Colors.green : Colors.red);
     
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -164,23 +176,39 @@ class _ItemTileState extends State<ItemTile> {
             ],
           ),
         ),
-        child: Card(
-          child: ExpansionTile(
-            title: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    widget.item.description,
-                    style: Theme.of(context).textTheme.titleMedium,
+        child: GestureDetector(
+          onLongPress: widget.onLongPress,
+          onDoubleTap: widget.onDoubleTap,
+          child: Card(
+            child: ExpansionTile(
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            widget.item.description,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                        if (context.watch<ItemProvider>().getChildrenForItem(widget.item.id).isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8),
+                            child: Icon(
+                              Icons.folder,
+                              size: 16,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
                 const SizedBox(width: 16),
                 Text(
-                  '\$${widget.item.amount.toStringAsFixed(2)}',
+                  '\$${displayAmount.abs().toStringAsFixed(2)}',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: widget.item.type == EntryType.revenue
-                            ? Colors.green
-                            : Colors.red,
+                        color: displayColor,
                       ),
                 ),
               ],
@@ -263,6 +291,7 @@ class _ItemTileState extends State<ItemTile> {
               ),
             ],
           ),
+        ),
         ),
       ),
     );

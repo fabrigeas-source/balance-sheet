@@ -32,6 +32,13 @@ class ItemProvider extends ChangeNotifier {
   List<Entry> getChildrenForItem(String parentId) {
     return _items.where((item) => item.parentId == parentId).toList();
   }
+  
+  double getSubItemsTotal(String parentId) {
+    final children = getChildrenForItem(parentId);
+    return children.fold(0.0, (sum, item) {
+      return sum + (item.type == EntryType.revenue ? item.amount : -item.amount);
+    });
+  }
 
   void createSubList(String parentId, Entry newItem) {
     final subItem = newItem.copyWith(
