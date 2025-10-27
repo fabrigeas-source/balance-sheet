@@ -118,10 +118,15 @@ class _ItemTileState extends State<ItemTile> {
                   children: [
                     Expanded(
                       child: _isEditing
-                          ? TextFormField(
-                              controller: _descriptionController,
-                              decoration: const InputDecoration(
-                                labelText: 'Description',
+                          ? SizedBox(
+                              width: double.infinity,
+                              child: TextFormField(
+                                controller: _descriptionController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Description',
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.symmetric(vertical: 8),
+                                ),
                               ),
                             )
                           : Text(
@@ -131,20 +136,25 @@ class _ItemTileState extends State<ItemTile> {
                     ),
                     const SizedBox(width: 16),
                     _isEditing
-                        ? TextFormField(
-                            controller: _amountController,
-                            decoration: const InputDecoration(
-                              labelText: 'Amount',
-                              prefixText: '\$',
-                            ),
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'^\d*\.?\d{0,2}'),
+                        ? SizedBox(
+                            width: 120,
+                            child: TextFormField(
+                              controller: _amountController,
+                              decoration: const InputDecoration(
+                                labelText: 'Amount',
+                                prefixText: '\$',
+                                isDense: true,
+                                contentPadding: EdgeInsets.symmetric(vertical: 8),
                               ),
-                            ],
+                              keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true,
+                              ),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(r'^\d*\.?\d{0,2}'),
+                                ),
+                              ],
+                            ),
                           )
                         : Text(
                             '\$${widget.item.amount.toStringAsFixed(2)}',

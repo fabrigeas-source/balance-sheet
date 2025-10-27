@@ -3,7 +3,29 @@ import 'package:flutter/material.dart';
 import '../models/entry.dart';
 
 class ItemProvider extends ChangeNotifier {
-  final List<Entry> _items = [];
+  final List<Entry> _items = [
+    Entry(
+      id: 'mock-1',
+      description: 'Monthly Rent',
+      amount: 1200.00,
+      type: EntryType.expense,
+      details: 'Apartment rent for October',
+    ),
+    Entry(
+      id: 'mock-2',
+      description: 'Utility Bills',
+      amount: 150.50,
+      type: EntryType.expense,
+      details: 'Electricity and water bills',
+    ),
+    Entry(
+      id: 'mock-3',
+      description: 'Groceries',
+      amount: 85.75,
+      type: EntryType.expense,
+      details: 'Weekly grocery shopping',
+    ),
+  ];
 
   List<Entry> get items => List.unmodifiable(_items);
 
