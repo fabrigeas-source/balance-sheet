@@ -62,30 +62,22 @@ class _ItemTileState extends State<ItemTile> {
     setState(() => _isEditing = false);
   }
 
-  void _showCreateSubListDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Create Sub-list'),
-        content: Text('Do you want to create a sub-list under "${widget.item.description}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('CANCEL'),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              // Trigger navigation to sub-list immediately
-              if (widget.onDoubleTap != null) {
-                widget.onDoubleTap!();
-              }
-            },
-            child: const Text('OPEN SUB-LIST'),
-          ),
-        ],
-      ),
+  void _createSubList(BuildContext context) {
+    // Create initial budget item with parent's type
+    final budgetItem = Entry(
+      id: '${widget.item.id}-budget-${DateTime.now().millisecondsSinceEpoch}',
+      description: 'Budget',
+      amount: widget.item.amount,
+      type: widget.item.type,
+      parentId: widget.item.id,
+      details: 'Initial budget allocation',
     );
+    context.read<ItemProvider>().createSubList(widget.item.id, budgetItem);
+    
+    // Navigate to sub-list immediately
+    if (widget.onDoubleTap != null) {
+      widget.onDoubleTap!();
+    }
   }
 
   @override
@@ -104,12 +96,8 @@ class _ItemTileState extends State<ItemTile> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Dismissible(
         key: Key(widget.item.id),
-        direction: DismissDirection.horizontal,
+        direction: DismissDirection.endToStart,
         confirmDismiss: (direction) async {
-          if (direction == DismissDirection.startToEnd) {
-            _showCreateSubListDialog(context);
-            return false;
-          }
           return await showDialog<bool>(
             context: context,
             builder: (context) => AlertDialog(
@@ -133,7 +121,7 @@ class _ItemTileState extends State<ItemTile> {
           ) ?? false;
         },
         onDismissed: (_) => context.read<ItemProvider>().deleteItem(widget.item.id, context),
-        secondaryBackground: Container(
+        background: Container(
           decoration: BoxDecoration(
             color: Colors.red.shade700,
             borderRadius: BorderRadius.circular(12),
@@ -147,27 +135,6 @@ class _ItemTileState extends State<ItemTile> {
               SizedBox(width: 8),
               Text(
                 'Delete',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-        background: Container(
-          decoration: BoxDecoration(
-            color: Colors.blue.shade700,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          alignment: Alignment.centerLeft,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: const Row(
-            children: [
-              Icon(Icons.playlist_add, color: Colors.white),
-              SizedBox(width: 8),
-              Text(
-                'Create Sub-list',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
@@ -283,8 +250,15 @@ class _ItemTileState extends State<ItemTile> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
+                          if (!hasChildren)
+                            IconButton(
+                              icon: const Icon(Icons.playlist_add),
+                              tooltip: 'Create Sub-list',
+                              onPressed: () => _createSubList(context),
+                            ),
                           IconButton(
                             icon: const Icon(Icons.edit),
+                            tooltip: 'Edit',
                             onPressed: () => setState(() => _isEditing = true),
                           ),
                         ],
