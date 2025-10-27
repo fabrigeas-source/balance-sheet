@@ -195,10 +195,13 @@ class _ItemTileState extends State<ItemTile> {
                         if (context.watch<ItemProvider>().getChildrenForItem(widget.item.id).isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(left: 8),
-                            child: Icon(
-                              Icons.folder,
-                              size: 16,
-                              color: Theme.of(context).colorScheme.primary,
+                            child: InkWell(
+                              onTap: widget.onDoubleTap,
+                              child: Icon(
+                                Icons.folder,
+                                size: 20,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
                             ),
                           ),
                       ],
