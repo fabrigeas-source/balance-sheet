@@ -10,6 +10,8 @@ class Entry {
   final double amount;
   final EntryType type;
   final DateTime createdAt;
+  final String? parentId;
+  final List<Entry> children;
 
   Entry({
     required this.id,
@@ -18,7 +20,10 @@ class Entry {
     required this.amount,
     required this.type,
     DateTime? createdAt,
-  }) : createdAt = createdAt ?? DateTime.now();
+    this.parentId,
+    List<Entry>? children,
+  }) : createdAt = createdAt ?? DateTime.now(),
+       children = children ?? [];
 
   Entry copyWith({
     String? id,
@@ -27,6 +32,8 @@ class Entry {
     double? amount,
     EntryType? type,
     DateTime? createdAt,
+    String? parentId,
+    List<Entry>? children,
   }) {
     return Entry(
       id: id ?? this.id,
@@ -35,6 +42,8 @@ class Entry {
       amount: amount ?? this.amount,
       type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
+      parentId: parentId ?? this.parentId,
+      children: children ?? this.children,
     );
   }
 

@@ -5,7 +5,9 @@ import '../models/entry.dart';
 import '../providers/item_provider.dart';
 
 class NewItemModal extends StatefulWidget {
-  const NewItemModal({Key? key}) : super(key: key);
+  final String? parentId;
+  
+  const NewItemModal({Key? key, this.parentId}) : super(key: key);
 
   @override
   State<NewItemModal> createState() => _NewItemModalState();
@@ -115,8 +117,13 @@ class _NewItemModalState extends State<NewItemModal> {
                                 : _detailsController.text,
                             amount: double.parse(_amountController.text),
                             type: EntryType.expense,
+                            parentId: widget.parentId,
                           );
-                          context.read<ItemProvider>().addItem(entry, context);
+                          if (widget.parentId != null) {
+                            context.read<ItemProvider>().createSubList(widget.parentId!, entry);
+                          } else {
+                            context.read<ItemProvider>().addItem(entry, context);
+                          }
                           Navigator.of(context).pop();
                         }
                       },
@@ -147,8 +154,13 @@ class _NewItemModalState extends State<NewItemModal> {
                                 : _detailsController.text,
                             amount: double.parse(_amountController.text),
                             type: EntryType.revenue,
+                            parentId: widget.parentId,
                           );
-                          context.read<ItemProvider>().addItem(entry, context);
+                          if (widget.parentId != null) {
+                            context.read<ItemProvider>().createSubList(widget.parentId!, entry);
+                          } else {
+                            context.read<ItemProvider>().addItem(entry, context);
+                          }
                           Navigator.of(context).pop();
                         }
                       },

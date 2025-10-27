@@ -27,7 +27,20 @@ class ItemProvider extends ChangeNotifier {
     ),
   ];
 
-  List<Entry> get items => List.unmodifiable(_items);
+  List<Entry> get items => List.unmodifiable(_items.where((item) => item.parentId == null));
+  
+  List<Entry> getChildrenForItem(String parentId) {
+    return _items.where((item) => item.parentId == parentId).toList();
+  }
+
+  void createSubList(String parentId, Entry newItem) {
+    final subItem = newItem.copyWith(
+      parentId: parentId,
+      id: DateTime.now().toIso8601String(),
+    );
+    _items.add(subItem);
+    notifyListeners();
+  }
 
   double get total => _items.fold(0, (sum, item) {
         return sum +
