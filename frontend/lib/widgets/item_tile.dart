@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../models/entry.dart';
+import '../providers/item_provider.dart';
 
 class ItemTile extends StatefulWidget {
   final Entry item;
@@ -51,7 +53,7 @@ class _ItemTileState extends State<ItemTile> {
       amount: double.tryParse(_amountController.text) ?? widget.item.amount,
     );
     
-    widget.onEdit?.call(updatedEntry);
+    context.read<ItemProvider>().updateItem(widget.item.id, updatedEntry, context);
     setState(() => _isEditing = false);
   }
 
@@ -83,7 +85,7 @@ class _ItemTileState extends State<ItemTile> {
             ],
           ),
         ),
-        onDismissed: (_) => widget.onDelete(),
+        onDismissed: (_) => context.read<ItemProvider>().deleteItem(widget.item.id, context),
         background: Container(
           decoration: BoxDecoration(
             color: Colors.red.shade700,

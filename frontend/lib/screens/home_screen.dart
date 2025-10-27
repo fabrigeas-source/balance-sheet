@@ -44,9 +44,9 @@ class HomeScreen extends StatelessWidget {
                     return ItemTile(
                       item: item,
                       onTap: () {}, // ExpansionTile handles the tap now
-                      onDelete: () => provider.deleteItem(item.id),
+                      onDelete: () => provider.deleteItem(item.id, context),
                       onEdit: (updatedItem) =>
-                          provider.updateItem(item.id, updatedItem),
+                          provider.updateItem(item.id, updatedItem, context),
                     );
                   },
                 );

@@ -116,7 +116,7 @@ class _NewItemModalState extends State<NewItemModal> {
                             amount: double.parse(_amountController.text),
                             type: EntryType.expense,
                           );
-                          context.read<ItemProvider>().addItem(entry);
+                          context.read<ItemProvider>().addItem(entry, context);
                           Navigator.of(context).pop();
                         }
                       },
@@ -148,7 +148,7 @@ class _NewItemModalState extends State<NewItemModal> {
                             amount: double.parse(_amountController.text),
                             type: EntryType.revenue,
                           );
-                          context.read<ItemProvider>().addItem(entry);
+                          context.read<ItemProvider>().addItem(entry, context);
                           Navigator.of(context).pop();
                         }
                       },
