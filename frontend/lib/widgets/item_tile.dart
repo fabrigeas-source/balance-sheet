@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../models/entry.dart';
 import '../providers/item_provider.dart';
-import 'new_item_modal.dart';
 
 class ItemTile extends StatefulWidget {
   final Entry item;
