@@ -183,7 +183,6 @@ class _ItemTileState extends State<ItemTile> {
                     ),
                   ),
                 const SizedBox(width: 8),
-                const SizedBox(width: 8),
                 Text(
                   '\$${displayAmount.abs().toStringAsFixed(2)}',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(

@@ -21,10 +21,7 @@ class _TasksScreenState extends State<TasksScreen> {
   final Set<String> _selectedTasks = {};
 
   void _showNewTaskModal(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => NewTaskModal(parentId: _currentParentId),
-    );
+    showNewTaskBottomSheet(context, parentId: _currentParentId);
   }
 
   void _navigateToSubTasks(Task task) {
@@ -54,7 +51,7 @@ class _TasksScreenState extends State<TasksScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         border: Border(
           bottom: BorderSide(
             color: Theme.of(context).colorScheme.outlineVariant,
@@ -147,6 +144,7 @@ class _TasksScreenState extends State<TasksScreen> {
             Expanded(
               child: Text(_screenTitle),
             ),
+
             IconButton(
               icon: Icon(_isSelectionMode ? Icons.check : Icons.select_all, size: 20),
               onPressed: () {

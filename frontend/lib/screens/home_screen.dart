@@ -22,10 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final Set<String> _selectedItems = {};
 
   void _showNewItemModal(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => NewItemModal(parentId: _currentParentId),
-    );
+    showNewItemBottomSheet(context, parentId: _currentParentId);
   }
 
   void _navigateToSubItems(Entry item) {
@@ -55,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         border: Border(
           bottom: BorderSide(
             color: Theme.of(context).colorScheme.outlineVariant,
