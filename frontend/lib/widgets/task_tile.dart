@@ -11,6 +11,7 @@ class TaskTile extends StatefulWidget {
   final VoidCallback? onToggle;
   final VoidCallback? onLongPress;
   final VoidCallback? onDoubleTap;
+  final bool showCheckbox;
 
   const TaskTile({
     Key? key,
@@ -21,6 +22,7 @@ class TaskTile extends StatefulWidget {
     this.onToggle,
     this.onLongPress,
     this.onDoubleTap,
+    this.showCheckbox = false,
   }) : super(key: key);
 
   @override
@@ -127,10 +129,10 @@ class _TaskTileState extends State<TaskTile> {
           onDoubleTap: widget.onDoubleTap,
           child: Card(
             child: ExpansionTile(
-              leading: Checkbox(
+              leading: widget.showCheckbox ? Checkbox(
                 value: widget.task.isCompleted,
                 onChanged: (_) => widget.onToggle?.call(),
-              ),
+              ) : null,
               title: Row(
                 children: [
                   Expanded(
@@ -158,6 +160,16 @@ class _TaskTileState extends State<TaskTile> {
                               ),
                             ),
                           ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: IconButton(
+                            icon: const Icon(Icons.edit, size: 18),
+                            onPressed: () => setState(() => _isEditing = true),
+                            tooltip: 'Edit task',
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                          ),
+                        ),
                       ],
                     ),
                   ),

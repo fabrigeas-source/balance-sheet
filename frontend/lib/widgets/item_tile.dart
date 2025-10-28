@@ -10,6 +10,9 @@ class ItemTile extends StatefulWidget {
   final ValueChanged<Entry>? onEdit;
   final VoidCallback? onLongPress;
   final VoidCallback? onDoubleTap;
+  final bool showCheckbox;
+  final bool? isSelected;
+  final ValueChanged<bool?>? onSelectionChanged;
 
   const ItemTile({
     Key? key,
@@ -19,6 +22,9 @@ class ItemTile extends StatefulWidget {
     this.onEdit,
     this.onLongPress,
     this.onDoubleTap,
+    this.showCheckbox = false,
+    this.isSelected,
+    this.onSelectionChanged,
   }) : super(key: key);
 
   @override
@@ -146,6 +152,10 @@ class _ItemTileState extends State<ItemTile> {
           onDoubleTap: widget.onDoubleTap,
           child: Card(
             child: ExpansionTile(
+              leading: widget.showCheckbox ? Checkbox(
+                value: widget.isSelected ?? false,
+                onChanged: widget.onSelectionChanged,
+              ) : null,
               title: Row(
                 children: [
                   Expanded(
@@ -172,7 +182,15 @@ class _ItemTileState extends State<ItemTile> {
                       ],
                     ),
                   ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.edit, size: 18),
+                  onPressed: () => setState(() => _isEditing = true),
+                  tooltip: 'Edit item',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                ),
+                const SizedBox(width: 8),
                 Text(
                   '\$${displayAmount.abs().toStringAsFixed(2)}',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(

@@ -18,6 +18,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Entry> _breadcrumbs = [];
   String? _currentParentId;
   String _screenTitle = 'Balance Sheet';
+  bool _isSelectionMode = false;
+  final Set<String> _selectedItems = {};
 
   void _showNewItemModal(BuildContext context) {
     showDialog(
@@ -151,6 +153,18 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: _editTitle,
               tooltip: 'Edit title',
             ),
+            IconButton(
+              icon: Icon(_isSelectionMode ? Icons.check : Icons.select_all, size: 20),
+              onPressed: () {
+                setState(() {
+                  _isSelectionMode = !_isSelectionMode;
+                  if (!_isSelectionMode) {
+                    _selectedItems.clear();
+                  }
+                });
+              },
+              tooltip: _isSelectionMode ? 'Exit selection' : 'Select items',
+            ),
           ],
         ),
       ),
@@ -189,6 +203,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           provider.updateItem(item.id, updatedItem, context),
                       onLongPress: () => _navigateToSubItems(item),
                       onDoubleTap: () => _navigateToSubItems(item),
+                      showCheckbox: _isSelectionMode,
+                      isSelected: _selectedItems.contains(item.id),
+                      onSelectionChanged: (selected) {
+                        setState(() {
+                          if (selected == true) {
+                            _selectedItems.add(item.id);
+                          } else {
+                            _selectedItems.remove(item.id);
+                          }
+                        });
+                      },
                     );
                   },
                 );

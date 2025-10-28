@@ -81,7 +81,7 @@ class TaskProvider extends ChangeNotifier {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Task added successfully'),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.green,
       ),
     );
   }
@@ -95,7 +95,7 @@ class TaskProvider extends ChangeNotifier {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Task updated successfully'),
-          backgroundColor: Colors.blue,
+          backgroundColor: Colors.green,
         ),
       );
     }
@@ -117,7 +117,7 @@ class TaskProvider extends ChangeNotifier {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Task deleted'),
-        backgroundColor: Colors.grey,
+        backgroundColor: Colors.green,
       ),
     );
   }

@@ -17,6 +17,8 @@ class _TasksScreenState extends State<TasksScreen> {
   final List<Task> _breadcrumbs = [];
   String? _currentParentId;
   String _screenTitle = 'Tasks';
+  bool _isSelectionMode = false;
+  final Set<String> _selectedTasks = {};
 
   void _showNewTaskModal(BuildContext context) {
     showDialog(
@@ -150,6 +152,18 @@ class _TasksScreenState extends State<TasksScreen> {
               onPressed: _editTitle,
               tooltip: 'Edit title',
             ),
+            IconButton(
+              icon: Icon(_isSelectionMode ? Icons.check : Icons.select_all, size: 20),
+              onPressed: () {
+                setState(() {
+                  _isSelectionMode = !_isSelectionMode;
+                  if (!_isSelectionMode) {
+                    _selectedTasks.clear();
+                  }
+                });
+              },
+              tooltip: _isSelectionMode ? 'Exit selection' : 'Select items',
+            ),
           ],
         ),
       ),
@@ -188,6 +202,7 @@ class _TasksScreenState extends State<TasksScreen> {
                       onToggle: () => provider.toggleTask(task.id),
                       onLongPress: () => _navigateToSubTasks(task),
                       onDoubleTap: () => _navigateToSubTasks(task),
+                      showCheckbox: _isSelectionMode,
                     );
                   },
                 );

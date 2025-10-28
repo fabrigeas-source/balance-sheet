@@ -86,16 +86,18 @@ class ItemProvider extends ChangeNotifier {
             (item.type == EntryType.revenue ? item.amount : -item.amount);
       });
 
-  void addItem(Entry item, BuildContext context) {
+  void addItem(Entry item, [BuildContext? context]) {
     _items.add(item);
     _saveItems();
     notifyListeners();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${item.type == EntryType.revenue ? 'Revenue' : 'Expense'} added successfully'),
-        backgroundColor: item.type == EntryType.revenue ? Colors.green : Colors.red,
-      ),
-    );
+    if (context != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${item.type == EntryType.revenue ? 'Revenue' : 'Expense'} added successfully'),
+          backgroundColor: item.type == EntryType.revenue ? Colors.green : Colors.red,
+        ),
+      );
+    }
   }
 
   void updateItem(String id, Entry updatedItem, BuildContext context) {

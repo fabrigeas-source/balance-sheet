@@ -4,16 +4,16 @@ import 'package:provider/provider.dart';
 import '../models/entry.dart';
 import '../providers/item_provider.dart';
 
-class NewItemModal extends StatefulWidget {
+class NewItemBottomSheet extends StatefulWidget {
   final String? parentId;
   
-  const NewItemModal({Key? key, this.parentId}) : super(key: key);
+  const NewItemBottomSheet({Key? key, this.parentId}) : super(key: key);
 
   @override
-  State<NewItemModal> createState() => _NewItemModalState();
+  State<NewItemBottomSheet> createState() => _NewItemBottomSheetState();
 }
 
-class _NewItemModalState extends State<NewItemModal> {
+class _NewItemBottomSheetState extends State<NewItemBottomSheet> {
   final _formKey = GlobalKey<FormState>();
   final _descriptionController = TextEditingController();
   final _detailsController = TextEditingController();
@@ -30,20 +30,30 @@ class _NewItemModalState extends State<NewItemModal> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        ),
         child: Form(
           key: _formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     'New Item',
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   IconButton(
                     icon: const Icon(Icons.close),
@@ -115,8 +125,8 @@ class _NewItemModalState extends State<NewItemModal> {
                   ),
                   maxLines: 3,
                 ),
+                const SizedBox(height: 16),
               ],
-              const SizedBox(height: 16),
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -200,5 +210,33 @@ class _NewItemModalState extends State<NewItemModal> {
         ),
       ),
     );
+  }
+}
+
+// Helper function to show the bottom sheet
+Future<void> showNewItemBottomSheet(BuildContext context, {String? parentId}) {
+  return showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => NewItemBottomSheet(parentId: parentId),
+  );
+}
+
+// Keep the old modal for backward compatibility but make it use bottom sheet
+class NewItemModal extends StatelessWidget {
+  final String? parentId;
+  
+  const NewItemModal({Key? key, this.parentId}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // Immediately show bottom sheet instead of dialog
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.of(context).pop(); // Close the dialog
+      showNewItemBottomSheet(context, parentId: parentId);
+    });
+    
+    return const SizedBox.shrink();
   }
 }
