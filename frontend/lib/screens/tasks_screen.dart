@@ -4,7 +4,6 @@ import '../providers/task_provider.dart';
 import '../models/task.dart';
 import '../widgets/task_tile.dart';
 import '../widgets/new_task_modal.dart';
-import '../widgets/editable_title.dart';
 
 class TasksScreen extends StatefulWidget {
   const TasksScreen({Key? key}) : super(key: key);
@@ -19,9 +18,33 @@ class _TasksScreenState extends State<TasksScreen> {
   String _screenTitle = 'Tasks';
   bool _isSelectionMode = false;
   final Set<String> _selectedTasks = {};
+  final TextEditingController _quickAddController = TextEditingController();
+
+  @override
+  void dispose() {
+    _quickAddController.dispose();
+    super.dispose();
+  }
 
   void _showNewTaskModal(BuildContext context) {
     showNewTaskBottomSheet(context, parentId: _currentParentId);
+  }
+
+  void _handleQuickAddTask() {
+    final text = _quickAddController.text.trim();
+    if (text.isEmpty) return;
+
+    final task = Task(
+      id: 'task-${DateTime.now().millisecondsSinceEpoch}',
+      description: text,
+      parentId: _currentParentId,
+    );
+
+    context.read<TaskProvider>().addTask(task, context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Task added'), backgroundColor: Colors.green),
+    );
+    _quickAddController.clear();
   }
 
   void _navigateToSubTasks(Task task) {
@@ -121,20 +144,6 @@ class _TasksScreenState extends State<TasksScreen> {
     );
   }
 
-  void _editTitle() async {
-    final newTitle = await showEditTitleDialog(
-      context,
-      currentTitle: _screenTitle,
-      dialogTitle: 'Edit Screen Title',
-    );
-    
-    if (newTitle != null && newTitle != _screenTitle) {
-      setState(() {
-        _screenTitle = newTitle;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -144,7 +153,6 @@ class _TasksScreenState extends State<TasksScreen> {
             Expanded(
               child: Text(_screenTitle),
             ),
-
             IconButton(
               icon: Icon(_isSelectionMode ? Icons.check : Icons.select_all, size: 20),
               onPressed: () {
@@ -207,6 +215,32 @@ class _TasksScreenState extends State<TasksScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showNewTaskModal(context),
         child: const Icon(Icons.add),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _quickAddController,
+                    decoration: const InputDecoration(
+                      hintText: 'Quick add task...',
+                      border: InputBorder.none,
+                    ),
+                    textInputAction: TextInputAction.send,
+                    onSubmitted: (_) => _handleQuickAddTask(),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.send),
+                  onPressed: _handleQuickAddTask,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

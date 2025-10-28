@@ -171,9 +171,9 @@ class _TaskTileState extends State<TaskTile> {
                           '${widget.task.dueDate!.month}/${widget.task.dueDate!.day}',
                           style: const TextStyle(fontSize: 12),
                         ),
-                        backgroundColor: widget.task.dueDate!.isBefore(DateTime.now())
-                            ? Colors.red.withOpacity(0.2)
-                            : Colors.blue.withOpacity(0.2),
+            backgroundColor: widget.task.dueDate!.isBefore(DateTime.now())
+              ? Colors.red.withValues(alpha: 0.2)
+              : Colors.blue.withValues(alpha: 0.2),
                       ),
                     ),
                 ],

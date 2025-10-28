@@ -5,7 +5,6 @@ import '../models/entry.dart';
 import '../widgets/item_tile.dart';
 import '../widgets/total_header.dart';
 import '../widgets/new_item_modal.dart';
-import '../widgets/editable_title.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -20,9 +19,35 @@ class _HomeScreenState extends State<HomeScreen> {
   String _screenTitle = 'Balance Sheet';
   bool _isSelectionMode = false;
   final Set<String> _selectedItems = {};
+  final TextEditingController _quickAddController = TextEditingController();
+
+  @override
+  void dispose() {
+    _quickAddController.dispose();
+    super.dispose();
+  }
 
   void _showNewItemModal(BuildContext context) {
     showNewItemBottomSheet(context, parentId: _currentParentId);
+  }
+
+  void _handleQuickAddItem() {
+    final text = _quickAddController.text.trim();
+    if (text.isEmpty) return;
+
+    final entry = Entry(
+      id: DateTime.now().toIso8601String(),
+      description: text,
+      amount: 0.0,
+      type: EntryType.expense,
+      parentId: _currentParentId,
+    );
+
+    context.read<ItemProvider>().addItem(entry, context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Item added')),
+    );
+    _quickAddController.clear();
   }
 
   void _navigateToSubItems(Entry item) {
@@ -122,20 +147,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _editTitle() async {
-    final newTitle = await showEditTitleDialog(
-      context,
-      currentTitle: _screenTitle,
-      dialogTitle: 'Edit Screen Title',
-    );
-    
-    if (newTitle != null && newTitle != _screenTitle) {
-      setState(() {
-        _screenTitle = newTitle;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -217,6 +228,32 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showNewItemModal(context),
         child: const Icon(Icons.add),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _quickAddController,
+                    decoration: const InputDecoration(
+                      hintText: 'Quick add item...',
+                      border: InputBorder.none,
+                    ),
+                    textInputAction: TextInputAction.send,
+                    onSubmitted: (_) => _handleQuickAddItem(),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.send),
+                  onPressed: _handleQuickAddItem,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

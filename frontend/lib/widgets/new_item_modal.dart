@@ -153,7 +153,7 @@ class _NewItemBottomSheetState extends State<NewItemBottomSheet> {
                         }
                       },
                       style: FilledButton.styleFrom(
-                        backgroundColor: Colors.red.withOpacity(0.1),
+                        backgroundColor: Colors.red.withValues(alpha: 0.1),
                         foregroundColor: Colors.red,
                       ),
                       child: const Row(
@@ -189,8 +189,8 @@ class _NewItemBottomSheetState extends State<NewItemBottomSheet> {
                           Navigator.of(context).pop();
                         }
                       },
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Colors.green.withOpacity(0.1),
+                        style: FilledButton.styleFrom(
+                        backgroundColor: Colors.green.withValues(alpha: 0.1),
                         foregroundColor: Colors.green,
                       ),
                       child: const Row(
