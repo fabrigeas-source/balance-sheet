@@ -1,31 +1,62 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import '../models/entry.dart';
 
 class ItemProvider extends ChangeNotifier {
-  final List<Entry> _items = [
-    Entry(
-      id: 'mock-1',
-      description: 'Monthly Rent',
-      amount: 1200.00,
-      type: EntryType.expense,
-      details: 'Apartment rent for October',
-    ),
-    Entry(
-      id: 'mock-2',
-      description: 'Utility Bills',
-      amount: 150.50,
-      type: EntryType.expense,
-      details: 'Electricity and water bills',
-    ),
-    Entry(
-      id: 'mock-3',
-      description: 'Groceries',
-      amount: 85.75,
-      type: EntryType.expense,
-      details: 'Weekly grocery shopping',
-    ),
-  ];
+  List<Entry> _items = [];
+  bool _isLoaded = false;
+
+  ItemProvider() {
+    _loadItems();
+  }
+
+  Future<void> _loadItems() async {
+    if (_isLoaded) return;
+    
+    final prefs = await SharedPreferences.getInstance();
+    final itemsJson = prefs.getString('items');
+    
+    if (itemsJson != null) {
+      final List<dynamic> decoded = json.decode(itemsJson);
+      _items = decoded.map((item) => Entry.fromJson(item)).toList();
+    } else {
+      // Load default mock data only if no saved data exists
+      _items = [
+        Entry(
+          id: 'mock-1',
+          description: 'Monthly Rent',
+          amount: 1200.00,
+          type: EntryType.expense,
+          details: 'Apartment rent for October',
+        ),
+        Entry(
+          id: 'mock-2',
+          description: 'Utility Bills',
+          amount: 150.50,
+          type: EntryType.expense,
+          details: 'Electricity and water bills',
+        ),
+        Entry(
+          id: 'mock-3',
+          description: 'Groceries',
+          amount: 85.75,
+          type: EntryType.expense,
+          details: 'Weekly grocery shopping',
+        ),
+      ];
+      await _saveItems();
+    }
+    
+    _isLoaded = true;
+    notifyListeners();
+  }
+
+  Future<void> _saveItems() async {
+    final prefs = await SharedPreferences.getInstance();
+    final itemsJson = json.encode(_items.map((item) => item.toJson()).toList());
+    await prefs.setString('items', itemsJson);
+  }
 
   List<Entry> get items => List.unmodifiable(_items.where((item) => item.parentId == null));
   
@@ -46,6 +77,7 @@ class ItemProvider extends ChangeNotifier {
       id: DateTime.now().toIso8601String(),
     );
     _items.add(subItem);
+    _saveItems();
     notifyListeners();
   }
 
@@ -56,6 +88,7 @@ class ItemProvider extends ChangeNotifier {
 
   void addItem(Entry item, BuildContext context) {
     _items.add(item);
+    _saveItems();
     notifyListeners();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -69,6 +102,7 @@ class ItemProvider extends ChangeNotifier {
     final index = _items.indexWhere((item) => item.id == id);
     if (index != -1) {
       _items[index] = updatedItem;
+      _saveItems();
       notifyListeners();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -82,6 +116,7 @@ class ItemProvider extends ChangeNotifier {
   void deleteItem(String id, BuildContext context) {
     final deletedItem = _items.firstWhere((item) => item.id == id);
     _items.removeWhere((item) => item.id == id);
+    _saveItems();
     notifyListeners();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

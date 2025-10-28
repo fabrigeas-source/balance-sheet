@@ -55,6 +55,7 @@ class Entry {
       'amount': amount,
       'type': type.toString(),
       'createdAt': createdAt.toIso8601String(),
+      'parentId': parentId,
     };
   }
 
@@ -63,12 +64,13 @@ class Entry {
       id: json['id'] as String,
       description: json['description'] as String,
       details: json['details'] as String?,
-      amount: json['amount'] as double,
+      amount: (json['amount'] as num).toDouble(),
       type: EntryType.values.firstWhere(
         (e) => e.toString() == json['type'],
         orElse: () => EntryType.expense,
       ),
       createdAt: DateTime.parse(json['createdAt'] as String),
+      parentId: json['parentId'] as String?,
     );
   }
 

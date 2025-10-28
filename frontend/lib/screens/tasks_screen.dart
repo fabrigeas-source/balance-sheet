@@ -4,6 +4,7 @@ import '../providers/task_provider.dart';
 import '../models/task.dart';
 import '../widgets/task_tile.dart';
 import '../widgets/new_task_modal.dart';
+import '../widgets/editable_title.dart';
 
 class TasksScreen extends StatefulWidget {
   const TasksScreen({Key? key}) : super(key: key);
@@ -15,6 +16,7 @@ class TasksScreen extends StatefulWidget {
 class _TasksScreenState extends State<TasksScreen> {
   final List<Task> _breadcrumbs = [];
   String? _currentParentId;
+  String _screenTitle = 'Tasks';
 
   void _showNewTaskModal(BuildContext context) {
     showDialog(
@@ -120,11 +122,36 @@ class _TasksScreenState extends State<TasksScreen> {
     );
   }
 
+  void _editTitle() async {
+    final newTitle = await showEditTitleDialog(
+      context,
+      currentTitle: _screenTitle,
+      dialogTitle: 'Edit Screen Title',
+    );
+    
+    if (newTitle != null && newTitle != _screenTitle) {
+      setState(() {
+        _screenTitle = newTitle;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tasks'),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(_screenTitle),
+            ),
+            IconButton(
+              icon: const Icon(Icons.edit, size: 20),
+              onPressed: _editTitle,
+              tooltip: 'Edit title',
+            ),
+          ],
+        ),
       ),
       body: Column(
         children: [

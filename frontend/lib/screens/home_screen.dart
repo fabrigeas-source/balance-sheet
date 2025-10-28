@@ -5,6 +5,7 @@ import '../models/entry.dart';
 import '../widgets/item_tile.dart';
 import '../widgets/total_header.dart';
 import '../widgets/new_item_modal.dart';
+import '../widgets/editable_title.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -16,6 +17,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final List<Entry> _breadcrumbs = [];
   String? _currentParentId;
+  String _screenTitle = 'Balance Sheet';
 
   void _showNewItemModal(BuildContext context) {
     showDialog(
@@ -121,11 +123,36 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _editTitle() async {
+    final newTitle = await showEditTitleDialog(
+      context,
+      currentTitle: _screenTitle,
+      dialogTitle: 'Edit Screen Title',
+    );
+    
+    if (newTitle != null && newTitle != _screenTitle) {
+      setState(() {
+        _screenTitle = newTitle;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Balance Sheet'),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(_screenTitle),
+            ),
+            IconButton(
+              icon: const Icon(Icons.edit, size: 20),
+              onPressed: _editTitle,
+              tooltip: 'Edit title',
+            ),
+          ],
+        ),
       ),
       body: Column(
         children: [
