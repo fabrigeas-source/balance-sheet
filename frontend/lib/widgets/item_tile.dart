@@ -183,13 +183,6 @@ class _ItemTileState extends State<ItemTile> {
                     ),
                   ),
                 const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.edit, size: 18),
-                  onPressed: () => setState(() => _isEditing = true),
-                  tooltip: 'Edit item',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                ),
                 const SizedBox(width: 8),
                 Text(
                   '\$${displayAmount.abs().toStringAsFixed(2)}',

@@ -160,16 +160,6 @@ class _TaskTileState extends State<TaskTile> {
                               ),
                             ),
                           ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8),
-                          child: IconButton(
-                            icon: const Icon(Icons.edit, size: 18),
-                            onPressed: () => setState(() => _isEditing = true),
-                            tooltip: 'Edit task',
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                          ),
-                        ),
                       ],
                     ),
                   ),

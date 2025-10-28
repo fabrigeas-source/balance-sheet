@@ -149,11 +149,6 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Text(_screenTitle),
             ),
             IconButton(
-              icon: const Icon(Icons.edit, size: 20),
-              onPressed: _editTitle,
-              tooltip: 'Edit title',
-            ),
-            IconButton(
               icon: Icon(_isSelectionMode ? Icons.check : Icons.select_all, size: 20),
               onPressed: () {
                 setState(() {
