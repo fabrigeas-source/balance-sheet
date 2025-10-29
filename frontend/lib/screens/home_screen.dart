@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/item_provider.dart';
-import '../models/entry.dart';
-import '../widgets/item_tile.dart';
-import '../widgets/total_header.dart';
-import '../widgets/new_item_modal.dart';
+import 'balance_sheet_widget.dart';
+import 'tasks_widget.dart';
+import 'base_scaffold.dart';
+import 'base_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -14,247 +12,22 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List<Entry> _breadcrumbs = [];
-  String? _currentParentId;
-  String _screenTitle = 'Balance Sheet';
-  bool _isSelectionMode = false;
-  final Set<String> _selectedItems = {};
-  final TextEditingController _quickAddController = TextEditingController();
-
-  @override
-  void dispose() {
-    _quickAddController.dispose();
-    super.dispose();
-  }
-
-  void _showNewItemModal(BuildContext context) {
-    showNewItemBottomSheet(context, parentId: _currentParentId);
-  }
-
-  void _handleQuickAddItem() {
-    final text = _quickAddController.text.trim();
-    if (text.isEmpty) return;
-
-    final entry = Entry(
-      id: DateTime.now().toIso8601String(),
-      description: text,
-      amount: 0.0,
-      type: EntryType.expense,
-      parentId: _currentParentId,
-    );
-
-    context.read<ItemProvider>().addItem(entry, context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Item added')),
-    );
-    _quickAddController.clear();
-  }
-
-  void _navigateToSubItems(Entry item) {
-    setState(() {
-      _breadcrumbs.add(item);
-      _currentParentId = item.id;
-    });
-  }
-
-  void _navigateToBreadcrumb(int index) {
-    setState(() {
-      if (index == -1) {
-        // Navigate to root
-        _breadcrumbs.clear();
-        _currentParentId = null;
-      } else {
-        // Navigate to specific breadcrumb
-        _breadcrumbs.removeRange(index + 1, _breadcrumbs.length);
-        _currentParentId = _breadcrumbs.isEmpty ? null : _breadcrumbs.last.id;
-      }
-    });
-  }
-
-  Widget _buildBreadcrumbs() {
-    if (_breadcrumbs.isEmpty) return const SizedBox.shrink();
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-        border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outlineVariant,
-          ),
-        ),
-      ),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-            InkWell(
-              onTap: () => _navigateToBreadcrumb(-1),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.home,
-                      size: 16,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Home',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            for (int i = 0; i < _breadcrumbs.length; i++) ...[
-              Icon(
-                Icons.chevron_right,
-                size: 16,
-                color: Theme.of(context).colorScheme.outline,
-              ),
-              InkWell(
-                onTap: i < _breadcrumbs.length - 1
-                    ? () => _navigateToBreadcrumb(i)
-                    : null,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: Text(
-                    _breadcrumbs[i].description,
-                    style: TextStyle(
-                      color: i < _breadcrumbs.length - 1
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.onSurface,
-                      fontWeight: i < _breadcrumbs.length - 1
-                          ? FontWeight.w500
-                          : FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-        ),
-      ),
-    );
-  }
+  int _currentIndex = 0;
+  // Typed keys for child page states
+  final GlobalKey<BasePageState> _balanceKey = GlobalKey<BasePageState>();
+  final GlobalKey<BasePageState> _tasksKey = GlobalKey<BasePageState>();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Expanded(
-              child: Text(_screenTitle),
-            ),
-            IconButton(
-              icon: Icon(_isSelectionMode ? Icons.check : Icons.select_all, size: 20),
-              onPressed: () {
-                setState(() {
-                  _isSelectionMode = !_isSelectionMode;
-                  if (!_isSelectionMode) {
-                    _selectedItems.clear();
-                  }
-                });
-              },
-              tooltip: _isSelectionMode ? 'Exit selection' : 'Select items',
-            ),
-          ],
-        ),
-      ),
-      body: Column(
-        children: [
-          const TotalHeader(),
-          _buildBreadcrumbs(),
-          Expanded(
-            child: Consumer<ItemProvider>(
-              builder: (context, provider, child) {
-                final items = _currentParentId == null
-                    ? provider.items
-                    : provider.getChildrenForItem(_currentParentId!);
-                    
-                return ListView.builder(
-                  itemCount: items.isEmpty ? 1 : items.length,
-                  itemBuilder: (context, index) {
-                    if (items.isEmpty) {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Text(
-                            _currentParentId == null
-                                ? 'No items yet. Add one using the + button!'
-                                : 'No sub-items yet. Add one using the + button!',
-                          ),
-                        ),
-                      );
-                    }
-                    final item = items[index];
-                    return ItemTile(
-                      item: item,
-                      onTap: () {}, // ExpansionTile handles the tap now
-                      onDelete: () => provider.deleteItem(item.id, context),
-                      onEdit: (updatedItem) =>
-                          provider.updateItem(item.id, updatedItem, context),
-                      onLongPress: () => _navigateToSubItems(item),
-                      onDoubleTap: () => _navigateToSubItems(item),
-                      showCheckbox: _isSelectionMode,
-                      isSelected: _selectedItems.contains(item.id),
-                      onSelectionChanged: (selected) {
-                        setState(() {
-                          if (selected == true) {
-                            _selectedItems.add(item.id);
-                          } else {
-                            _selectedItems.remove(item.id);
-                          }
-                        });
-                      },
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showNewItemModal(context),
-        child: const Icon(Icons.add),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _quickAddController,
-                    decoration: const InputDecoration(
-                      hintText: 'Quick add item...',
-                      border: InputBorder.none,
-                    ),
-                    textInputAction: TextInputAction.send,
-                    onSubmitted: (_) => _handleQuickAddItem(),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.send),
-                  onPressed: _handleQuickAddItem,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return BaseScaffold(
+      pages: [
+        BalanceSheetWidget(key: _balanceKey),
+        TasksWidget(key: _tasksKey),
+      ],
+      pageKeys: [_balanceKey, _tasksKey],
+      currentIndex: _currentIndex,
+      onIndexChanged: (i) => setState(() => _currentIndex = i),
     );
   }
 }
+

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import '../models/entry.dart';
 import '../providers/item_provider.dart';
@@ -97,7 +98,7 @@ class _ItemTileState extends State<ItemTile> {
         : (widget.item.type == EntryType.revenue ? Colors.green : Colors.red);
     
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing, vertical: AppTheme.spacingSmall),
       child: Dismissible(
         key: Key(widget.item.id),
         direction: DismissDirection.endToStart,
@@ -124,14 +125,29 @@ class _ItemTileState extends State<ItemTile> {
             ),
           ) ?? false;
         },
-        onDismissed: (_) => context.read<ItemProvider>().deleteItem(widget.item.id, context),
+        onDismissed: (_) {
+          final deleted = context.read<ItemProvider>().deleteItem(widget.item.id, context);
+          if (deleted != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${deleted.description} deleted'),
+                action: SnackBarAction(
+                  label: 'UNDO',
+                  onPressed: () {
+                    context.read<ItemProvider>().addItem(deleted, context);
+                  },
+                ),
+              ),
+            );
+          }
+        },
         background: Container(
           decoration: BoxDecoration(
             color: Colors.red.shade700,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(6),
           ),
           alignment: Alignment.centerRight,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing),
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -169,7 +185,7 @@ class _ItemTileState extends State<ItemTile> {
                         ),
                         if (context.watch<ItemProvider>().getChildrenForItem(widget.item.id).isNotEmpty)
                           Padding(
-                            padding: const EdgeInsets.only(left: 8),
+                            padding: const EdgeInsets.only(left: AppTheme.spacingSmall),
                             child: InkWell(
                               onTap: widget.onDoubleTap,
                               child: Icon(
@@ -182,7 +198,7 @@ class _ItemTileState extends State<ItemTile> {
                       ],
                     ),
                   ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppTheme.spacingSmall),
                 Text(
                   '\$${displayAmount.abs().toStringAsFixed(2)}',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -193,12 +209,12 @@ class _ItemTileState extends State<ItemTile> {
             ),
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                padding: const EdgeInsets.fromLTRB(AppTheme.spacing, 0, AppTheme.spacing, AppTheme.spacingLarge),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (widget.item.details?.isNotEmpty == true || _isEditing) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppTheme.spacingSmall),
                       _isEditing
                           ? TextFormField(
                               controller: _detailsController,
@@ -213,12 +229,12 @@ class _ItemTileState extends State<ItemTile> {
                             ),
                     ],
                     if (children.isNotEmpty) ...[
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppTheme.spacingLarge),
                       Text(
                         'Sub-items:',
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppTheme.spacingSmall),
                       ...children.map((child) => ListTile(
                         title: Text(child.description),
                         trailing: Text(
@@ -232,7 +248,7 @@ class _ItemTileState extends State<ItemTile> {
                       )).toList(),
                     ],
                     if (_isEditing) ...[
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppTheme.spacingLarge),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -247,7 +263,7 @@ class _ItemTileState extends State<ItemTile> {
                             },
                             child: const Text('CANCEL'),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: AppTheme.spacingSmall),
                           FilledButton(
                             onPressed: _handleEdit,
                             child: const Text('SAVE'),

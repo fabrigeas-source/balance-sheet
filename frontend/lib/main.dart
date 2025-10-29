@@ -4,6 +4,7 @@ import 'providers/item_provider.dart';
 import 'providers/task_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/tasks_screen.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,10 +22,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Balance Sheet & Tasks',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-          useMaterial3: true,
-        ),
+        theme: AppTheme.themeData(seed: Colors.teal),
         home: const MainLayout(),
       ),
     );

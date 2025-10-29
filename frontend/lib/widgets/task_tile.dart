@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import '../models/task.dart';
 import '../providers/task_provider.dart';
@@ -97,7 +98,7 @@ class _TaskTileState extends State<TaskTile> {
     final hasChildren = children.isNotEmpty;
     
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing, vertical: AppTheme.spacingSmall),
       child: Dismissible(
         key: Key(widget.task.id),
         direction: DismissDirection.endToStart,
@@ -105,10 +106,10 @@ class _TaskTileState extends State<TaskTile> {
         background: Container(
           decoration: BoxDecoration(
             color: Colors.red.shade700,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(6),
           ),
           alignment: Alignment.centerRight,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing),
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -150,7 +151,7 @@ class _TaskTileState extends State<TaskTile> {
                         ),
                         if (hasChildren)
                           Padding(
-                            padding: const EdgeInsets.only(left: 8),
+                            padding: const EdgeInsets.only(left: AppTheme.spacingSmall),
                             child: InkWell(
                               onTap: widget.onDoubleTap,
                               child: Icon(
@@ -165,7 +166,7 @@ class _TaskTileState extends State<TaskTile> {
                   ),
                   if (widget.task.dueDate != null)
                     Padding(
-                      padding: const EdgeInsets.only(left: 8),
+                      padding: const EdgeInsets.only(left: AppTheme.spacingSmall),
                       child: Chip(
                         label: Text(
                           '${widget.task.dueDate!.month}/${widget.task.dueDate!.day}',
@@ -179,13 +180,13 @@ class _TaskTileState extends State<TaskTile> {
                 ],
               ),
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  Padding(
+                  padding: const EdgeInsets.fromLTRB(AppTheme.spacing, 0, AppTheme.spacing, AppTheme.spacingLarge),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (widget.task.details?.isNotEmpty == true || _isEditing) ...[
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppTheme.spacingSmall),
                         _isEditing
                             ? TextFormField(
                                 controller: _detailsController,
@@ -200,7 +201,7 @@ class _TaskTileState extends State<TaskTile> {
                               ),
                       ],
                       if (_isEditing) ...[
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppTheme.spacingLarge),
                         ListTile(
                           title: Text(
                             _selectedDueDate == null
@@ -217,14 +218,14 @@ class _TaskTileState extends State<TaskTile> {
                           ),
                       ],
                       if (children.isNotEmpty) ...[
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppTheme.spacingLarge),
                         Text(
                           'Sub-tasks: ${children.length}',
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
                       ],
                       if (_isEditing) ...[
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppTheme.spacingLarge),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [

@@ -94,7 +94,7 @@ class ItemProvider extends ChangeNotifier {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('${item.type == EntryType.revenue ? 'Revenue' : 'Expense'} added successfully'),
-          backgroundColor: item.type == EntryType.revenue ? Colors.green : Colors.red,
+          backgroundColor: Colors.green,
         ),
       );
     }
@@ -115,17 +115,16 @@ class ItemProvider extends ChangeNotifier {
     }
   }
 
-  void deleteItem(String id, BuildContext context) {
-    final deletedItem = _items.firstWhere((item) => item.id == id);
-    _items.removeWhere((item) => item.id == id);
+  /// Deletes an item and returns the deleted [Entry] so callers can offer an
+  /// undo action. If the item isn't found returns null.
+  Entry? deleteItem(String id, BuildContext? context) {
+    final index = _items.indexWhere((item) => item.id == id);
+    if (index == -1) return null;
+    final deletedItem = _items.removeAt(index);
     _saveItems();
     notifyListeners();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Item deleted'),
-        backgroundColor: Colors.grey,
-      ),
-    );
+    // Caller may show a SnackBar with an Undo action.
+    return deletedItem;
   }
 
   Entry? getItem(String id) {
